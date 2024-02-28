@@ -4,8 +4,12 @@ import time
 from utils.defines import *
 from utils.interface import *
 
-kb = KeyBoard(r'/dev/hidg0')
-mouse = Mouse(r'/dev/hidg1')
+# kb = KeyBoard(r'/dev/hidg0')
+# mouse = Mouse(r'/dev/hidg1')
+
+kb = KeyBoard("192.168.3.104", 5643)
+mouse = Mouse("192.168.3.104", 5644)
+
 
 def makeCircle(r):
     points = []
@@ -21,26 +25,31 @@ def makeCircle(r):
     return offsets
 
 
-time.sleep(2)
-mouse.btn_press(MOUSE_BTN_LEFT)
-mouse.btn_release(MOUSE_BTN_LEFT)
+# # time.sleep(2)
+# mouse.btn_press(MOUSE_BTN_LEFT)
+# mouse.btn_release(MOUSE_BTN_LEFT)
 
-time.sleep(0.5)
 
-for (x,y) in makeCircle(200):
-    mouse.move(x=x,y=y)
-    time.sleep(0.01)
+# time.sleep(0.5)
+
+# mouse.move(x=60, y=-60)
+
+
+for i in range(10):
+    for (x, y) in makeCircle(200):
+        mouse.move(x=x, y=y)
+        time.sleep(1/250)
 
 
 # for i in range(10):
 #     mouse.wheel_move(wh=-1)
 #     time.sleep(0.5)
 
-# for key in [KEY_A,KEY_B,KEY_C,KEY_D]:
-#     kb.key_press(key)
-#     time.sleep(0.1)
-#     kb.key_release(key)
-#     time.sleep(0.1)
+for key in [KEY_A,KEY_B,KEY_C,KEY_D]:
+    kb.key_press(key)
+    time.sleep(0.1)
+    kb.key_release(key)
+    time.sleep(0.1)
 
 # for key in [KEY_LEFT_CTRL,
 #             KEY_LEFT_SHIFT,

@@ -1,6 +1,6 @@
-import os
-
 from utils.defines import *
+import os
+import socket
 
 
 def setBit(value, index, bit):
@@ -9,30 +9,33 @@ def setBit(value, index, bit):
 
 
 class Mouse:
-    def __init__(self, path) -> None:
-        self.fd = os.open(path, os.O_RDWR)
+    def __init__(self, host, port) -> None:
+        self.host = host
+        self.port = port
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.btns = 0x00
         try:
-            os.write(self.fd, b'\x00' * 5)
+            self.socket.sendto(b'\x00' * 5, (self.host, self.port))
         except Exception as e:
             raise e
 
     def __del__(self):
         try:
-            os.write(self.fd, b'\x00' * 5)
-            os.close(self.fd)
+            self.socket.sendto(b'\x00' * 5, (self.host, self.port))
+            self.socket.close()
         except Exception as e:
             pass
 
     def report(self, x=0, y=0, wh=0, l=None, r=None, m=None):
-        self.btns = setBit(self.btns, MOUSE_BTN_LEFT, l) if l is not None else self.btns
-        self.btns = setBit(self.btns, MOUSE_BTN_RIGHT, r) if r is not None else self.btns
-        self.btns = setBit(self.btns, MOUSE_BTN_MIDDLE, m) if m is not None else self.btns
+        self.btns = setBit(self.btns, 0, l) if l is not None else self.btns
+        self.btns = setBit(self.btns, 1, r) if r is not None else self.btns
+        self.btns = setBit(self.btns, 2, m) if m is not None else self.btns
         write_bytes = (self.btns).to_bytes(1, byteorder='little', signed=False)
         write_bytes += (x).to_bytes(2, 'little', signed=True)
         write_bytes += (y).to_bytes(2, 'little', signed=True)
         write_bytes += (wh).to_bytes(2, 'little', signed=True)
-        os.write(self.fd, write_bytes)
+        self.socket.sendto( write_bytes, (self.host, self.port))
+        print(write_bytes,(self.host, self.port))
 
     def move(self, x=0, y=0):
         self.report(x=x, y=y)
@@ -57,13 +60,13 @@ class Mouse:
         self.report(wh=wh)
 
 
-
-
 class KeyBoard:
-    def __init__(self, path):
-        self.fd = os.open(path, os.O_RDWR)
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
-            os.write(self.fd, b"\x00" * 8)
+            self.socket.sendto(b'\x00' * 8, (self.host, self.port))
         except Exception as e:
             raise e
         self.spacialKey = 0x00
@@ -73,19 +76,22 @@ class KeyBoard:
 
     def __del__(self):
         try:
-            os.write(self.fd, b"\x00" * 8)
-            os.close(self.fd)
+            self.socket.sendto(b'\x00' * 8, (self.host, self.port))
+            self.socket.close()
         except Exception as e:
             pass
 
     def report(self,):
-        write_bytes = (self.spacialKey).to_bytes( 1, byteorder='little', signed=False)
+        write_bytes = (self.spacialKey).to_bytes(
+            1, byteorder='little', signed=False)
         write_bytes += b'\x00'  # 保留
         for down_key in self.key_state:
             write_bytes += down_key
         for __ in range(6 - len(self.key_state)):
             write_bytes += b'\x00'
-        os.write(self.fd, write_bytes)
+        print(write_bytes)
+        self.socket.sendto(write_bytes, (self.host, self.port))
+
 
     def key_press(self, key):
         if key in self.special_key_order:

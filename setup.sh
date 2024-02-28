@@ -18,3 +18,12 @@ chmod +x /usr/bin/enable_hid.sh
 
 # Enable service
 systemctl enable enable_hid.service
+
+# Enable remote
+
+
+gcc udp2file.c -o udp2file
+cp udp2file /usr/bin/
+
+
+
